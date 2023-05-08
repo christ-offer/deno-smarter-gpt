@@ -2,7 +2,7 @@
 
 ## Chain
 
-* The question get's passed to 3 workers/researchers that provide answers with different temperature settings.
+* The question get's passed to 3 workers/researchers that provide answers with different temperature settings. (these are webworkers, so they run in parallel)
 
 * These answers are then passed to an analyzer that points out flaws and logical errors in the answers.
 
@@ -22,6 +22,7 @@ Then run the following command:
 ```
 deno run -A main.ts
 ```
+
 
 ## Limitations
 
