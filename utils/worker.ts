@@ -2,7 +2,7 @@
 import { researcher } from "./researcher.ts";
 
 self.onmessage = async (e: MessageEvent) => {
-  console.log('Starting researcher....')
+  console.log('Starting research worker....')
   const { question, temperature } = e.data;
   const result = await researcher(question, temperature);
   const content = result.data.choices[0].message?.content;

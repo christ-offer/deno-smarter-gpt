@@ -1,4 +1,3 @@
-import { researcher } from "./utils/researcher.ts";
 import { analyzer } from "./utils/analyzer.ts";
 import { professor } from "./utils/professor.ts";
 
@@ -34,5 +33,5 @@ const smartGpt = async (question: string) => {
 }
 
 smartGpt(`
-What is 1+1?
+If it takes 5 hours for 5 clothes to dry, how many hours would it take for 131 clothes to dry?
 `);
