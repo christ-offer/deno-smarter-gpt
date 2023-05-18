@@ -1,26 +1,36 @@
 import { analyzer } from "./utils/analyzer.ts";
 import { professor } from "./utils/professor.ts";
-
+import { routing } from "./utils/routing.ts";
+import { systemMessage } from './messages/system-messages.ts'
 
 const smartGpt = async (question: string) => {
-  // Make 3 requests to the API
-  const worker1 = new Worker(new URL("./utils/worker.ts", import.meta.url).href, { type: "module" });
-  const worker2 = new Worker(new URL("./utils/worker.ts", import.meta.url).href, { type: "module" });
-  const worker3 = new Worker(new URL("./utils/worker.ts", import.meta.url).href, { type: "module" });
+  
+  console.log('Starting routing.... \n')
+  const routingResult = await routing(question);
+  const routingDecisions = routingResult?.data.choices[0].message?.content;
+  console.log(`Routing: ${routingDecisions} \n`)
+  
+  // turn the returned string into an array
+  const routingMessageArray = routingDecisions
+    .slice(1, -1) // remove the brackets
+    .split(',') // split by comma
+    .map(s => s.trim().slice(1, -1));
 
-  const workers = [worker1, worker2, worker3];
-  const temperatures = [0.2, 0.5, 0.8];
+  // Prepare the workers with corresponding system messages and temperatures
+  const internAnswers = await Promise.all(routingMessageArray.map((aiType) => {
+    const worker = new Worker(new URL("./utils/worker.ts", import.meta.url).href, { type: "module" });
+    const message = systemMessage[aiType].message;
+    const temperature = systemMessage[aiType].temperature;
 
-  const internAnswers = await Promise.all(workers.map((worker, index) => {
     return new Promise((resolve) => {
-      worker.postMessage({ question, temperature: temperatures[index] });
+      worker.postMessage({ question, message, temperature });
       worker.onmessage = (event: MessageEvent) => {
         resolve(event.data);
         worker.terminate();
       };
     });
   }));
-  
+
   console.log('Starting analyzer.... \n')
   const analysis = await analyzer(internAnswers, question);
   console.log(`Researcher: ${analysis?.data.choices[0].message?.content} \n`)
@@ -33,5 +43,5 @@ const smartGpt = async (question: string) => {
 }
 
 smartGpt(`
-If it takes 5 hours for 5 clothes to dry, how many hours would it take for 131 clothes to dry?
+In the book 'To Kill a Mockingbird', how does Scout's understanding of the world change throughout the story?
 `);
